@@ -12,9 +12,14 @@
 </head>
 <body class="bg-[#552e00] text-white min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
-  <!-- ⚙️ Floating Button -->
+  <!-- ⚙️ Floating Settings Button -->
   <button onclick="togglePanel()" class="fixed top-4 right-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50">
     ⚙️
+  </button>
+
+  <!-- 🗖 Width Toggle Button -->
+  <button onclick="toggleWidth()" class="fixed top-4 left-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50" title="Toggle Width">
+    🗖
   </button>
 
   <!-- Overlay -->
@@ -33,7 +38,7 @@
   </div>
 
   <!-- Notepad Card -->
-  <div class="relative z-10 w-full max-w-3xl bg-[#0f172a] rounded-xl p-6 shadow-2xl">
+  <div id="notepadBox" class="relative z-10 w-full max-w-3xl bg-[#0f172a] rounded-xl p-6 shadow-2xl transition-all duration-300">
     <h1 class="text-center text-xl font-semibold mb-4">Notepad Online</h1>
 
     <textarea id="notepad"
@@ -50,6 +55,7 @@
     const notepad = document.getElementById('notepad');
     const wordCount = document.getElementById('wordCount');
     const charCount = document.getElementById('charCount');
+    const notepadBox = document.getElementById('notepadBox');
 
     // Load from localStorage
     notepad.value = localStorage.getItem("notes") || "";
@@ -101,7 +107,11 @@
       overlay.classList.toggle("hidden", !isHidden);
     }
 
-    // Initial counts
+    function toggleWidth() {
+      notepadBox.classList.toggle("max-w-3xl");
+      notepadBox.classList.toggle("max-w-none");
+    }
+
     updateCounts();
   </script>
 </body>
