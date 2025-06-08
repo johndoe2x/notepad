@@ -10,22 +10,22 @@
     textarea { font-family: 'Fira Code', monospace; }
   </style>
 </head>
-<body class="bg-[#552e00] text-white min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
+<body class="bg-[#6a3f1d] text-white min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
   <!-- ⚙️ Floating Settings Button -->
   <button onclick="togglePanel()" class="fixed top-4 right-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50">
     ⚙️
   </button>
 
-  <!-- 🗖 Width Toggle Button -->
-  <button onclick="toggleWidth()" class="fixed top-4 left-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50" title="Toggle Width">
+  <!-- 🗖 Fullscreen Toggle Button -->
+  <button id="resizeBtn" onclick="toggleSize()" class="fixed top-4 left-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50" title="Toggle Size">
     🗖
   </button>
 
   <!-- Overlay -->
   <div id="overlay" onclick="togglePanel()" class="fixed inset-0 bg-black bg-opacity-40 hidden z-30"></div>
 
-  <!-- Slide-In Settings Panel -->
+  <!-- Slide-In Panel -->
   <div id="sidePanel" class="fixed top-0 right-0 w-64 h-full bg-gray-900 text-white shadow-lg p-4 transform translate-x-full transition-transform duration-300 z-40">
     <h2 class="text-lg font-bold mb-4">Settings</h2>
     <div class="space-y-3">
@@ -37,12 +37,12 @@
     </div>
   </div>
 
-  <!-- Notepad Card -->
+  <!-- Notepad Box -->
   <div id="notepadBox" class="relative z-10 w-full max-w-3xl bg-[#0f172a] rounded-xl p-6 shadow-2xl transition-all duration-300">
     <h1 class="text-center text-xl font-semibold mb-4">Notepad Online</h1>
 
     <textarea id="notepad"
-      class="w-full h-80 p-4 text-base bg-[#1e293b] text-white placeholder-gray-400 rounded-lg focus:outline-none resize-none"
+      class="w-full h-80 p-4 text-base bg-[#1e293b] text-white placeholder-gray-400 rounded-lg focus:outline-none resize-none transition-all duration-300"
       placeholder="Start typing..."></textarea>
 
     <div class="flex justify-between text-sm text-gray-400 mt-2">
@@ -56,6 +56,7 @@
     const wordCount = document.getElementById('wordCount');
     const charCount = document.getElementById('charCount');
     const notepadBox = document.getElementById('notepadBox');
+    const resizeBtn = document.getElementById('resizeBtn');
 
     // Load from localStorage
     notepad.value = localStorage.getItem("notes") || "";
@@ -107,9 +108,15 @@
       overlay.classList.toggle("hidden", !isHidden);
     }
 
-    function toggleWidth() {
-      notepadBox.classList.toggle("max-w-3xl");
-      notepadBox.classList.toggle("max-w-none");
+    let isFull = false;
+
+    function toggleSize() {
+      isFull = !isFull;
+      notepadBox.classList.toggle("max-w-3xl", !isFull);
+      notepadBox.classList.toggle("max-w-none", isFull);
+      notepad.classList.toggle("h-80", !isFull);
+      notepad.classList.toggle("h-[90vh]", isFull);
+      resizeBtn.textContent = isFull ? "🗗" : "🗖";
     }
 
     updateCounts();
