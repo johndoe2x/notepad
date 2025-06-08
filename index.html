@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notepad Online</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-yellow-900 text-white min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-3xl bg-gray-900 rounded-xl p-6 shadow-2xl">
+    <h1 class="text-center text-2xl font-semibold mb-4">Notepad Online</h1>
+
+    <!-- Toolbar -->
+    <div class="flex justify-between items-center mb-3">
+      <div class="space-x-2">
+        <button onclick="changeFontSize(1)" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">A+</button>
+        <button onclick="changeFontSize(-1)" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">A-</button>
+      </div>
+    </div>
+
+    <!-- Textarea -->
+    <textarea id="notepad" class="w-full h-80 p-4 text-base font-mono bg-gray-800 rounded-lg focus:outline-none resize-none"
+      placeholder="Start typing..."></textarea>
+
+    <!-- Stats -->
+    <div class="text-sm mt-3 text-gray-400 flex justify-between">
+      <span id="wordCount">Words: 0</span>
+      <span id="charCount">Characters: 0</span>
+    </div>
+  </div>
+
+  <script>
+    const notepad = document.getElementById('notepad');
+    const wordCount = document.getElementById('wordCount');
+    const charCount = document.getElementById('charCount');
+
+    function updateCounts() {
+      const text = notepad.value;
+      const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+      wordCount.textContent = `Words: ${words.length}`;
+      charCount.textContent = `Characters: ${text.length}`;
+    }
+
+    notepad.addEventListener('input', updateCounts);
+
+    function changeFontSize(delta) {
+      const currentSize = parseFloat(window.getComputedStyle(notepad).fontSize);
+      notepad.style.fontSize = (currentSize + delta) + 'px';
+    }
+
+    // Initial count update
+    updateCounts();
+  </script>
+</body>
+</html>
