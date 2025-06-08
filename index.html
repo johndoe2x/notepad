@@ -7,51 +7,52 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
   <style>
-    textarea, input { font-family: 'Fira Code', monospace; }
+    textarea { font-family: 'Fira Code', monospace; }
   </style>
 </head>
-<body class="bg-yellow-900 text-white min-h-screen flex items-center justify-center p-6 transition-colors duration-300">
-  <div class="w-full max-w-3xl bg-gray-900 rounded-xl p-6 shadow-2xl space-y-4">
-    
-    <!-- Header -->
-    <h1 class="text-center text-2xl font-bold">📝 Notepad Online</h1>
-    <p class="text-sm text-gray-400 text-center" id="datetime"></p>
+<body class="bg-[#552e00] text-white min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
-    <!-- Note Title -->
-    <input id="noteTitle" placeholder="Untitled Note" class="w-full bg-gray-800 text-white text-lg font-semibold px-3 py-2 rounded outline-none" />
+  <!-- ⚙️ Floating Button -->
+  <button onclick="togglePanel()" class="fixed top-4 right-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50">
+    ⚙️
+  </button>
 
-    <!-- Toolbar -->
-    <div class="flex flex-wrap gap-2 justify-between items-center">
-      <div class="space-x-2">
-        <button onclick="changeFontSize(1)" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">A+</button>
-        <button onclick="changeFontSize(-1)" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">A-</button>
-        <button onclick="toggleTheme()" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">🌓 Theme</button>
-      </div>
-      <div class="space-x-2">
-        <button onclick="downloadNotes()" class="bg-blue-600 px-3 py-1 rounded hover:bg-blue-500">⬇️ Download</button>
-        <button onclick="clearNotes()" class="bg-red-600 px-3 py-1 rounded hover:bg-red-500">🗑 Clear</button>
-      </div>
+  <!-- Overlay -->
+  <div id="overlay" onclick="togglePanel()" class="fixed inset-0 bg-black bg-opacity-40 hidden z-30"></div>
+
+  <!-- Slide-In Settings Panel -->
+  <div id="sidePanel" class="fixed top-0 right-0 w-64 h-full bg-gray-900 text-white shadow-lg p-4 transform translate-x-full transition-transform duration-300 z-40">
+    <h2 class="text-lg font-bold mb-4">Settings</h2>
+    <div class="space-y-3">
+      <button onclick="changeFontSize(1)" class="w-full bg-gray-700 px-3 py-2 rounded">A+ Increase</button>
+      <button onclick="changeFontSize(-1)" class="w-full bg-gray-700 px-3 py-2 rounded">A- Decrease</button>
+      <button onclick="downloadNotes()" class="w-full bg-blue-600 px-3 py-2 rounded">⬇️ Download</button>
+      <button onclick="clearNotes()" class="w-full bg-red-600 px-3 py-2 rounded">🗑 Clear</button>
+      <button onclick="toggleTheme()" class="w-full bg-gray-700 px-3 py-2 rounded">🌓 Toggle Theme</button>
     </div>
-
-    <!-- Textarea -->
-    <textarea id="notepad" class="w-full h-80 p-4 text-base bg-gray-800 rounded-lg focus:outline-none resize-none"
-      placeholder="Start typing..."></textarea>
   </div>
 
-  <!-- Sticky Word Count -->
-  <div class="fixed bottom-2 right-4 text-sm text-gray-300 bg-gray-800 px-4 py-2 rounded shadow-lg">
-    <span id="wordCount">Words: 0</span> | <span id="charCount">Characters: 0</span>
+  <!-- Notepad Card -->
+  <div class="relative z-10 w-full max-w-3xl bg-[#0f172a] rounded-xl p-6 shadow-2xl">
+    <h1 class="text-center text-xl font-semibold mb-4">Notepad Online</h1>
+
+    <textarea id="notepad"
+      class="w-full h-80 p-4 text-base bg-[#1e293b] text-white placeholder-gray-400 rounded-lg focus:outline-none resize-none"
+      placeholder="Start typing..."></textarea>
+
+    <div class="flex justify-between text-sm text-gray-400 mt-2">
+      <span id="wordCount">Words: 0</span>
+      <span id="charCount">Characters: 0</span>
+    </div>
   </div>
 
   <script>
     const notepad = document.getElementById('notepad');
     const wordCount = document.getElementById('wordCount');
     const charCount = document.getElementById('charCount');
-    const noteTitle = document.getElementById('noteTitle');
 
     // Load from localStorage
     notepad.value = localStorage.getItem("notes") || "";
-    noteTitle.value = localStorage.getItem("noteTitle") || "";
 
     function updateCounts() {
       const text = notepad.value;
@@ -65,10 +66,6 @@
       updateCounts();
     });
 
-    noteTitle.addEventListener('input', () => {
-      localStorage.setItem("noteTitle", noteTitle.value);
-    });
-
     function changeFontSize(delta) {
       const currentSize = parseFloat(window.getComputedStyle(notepad).fontSize);
       notepad.style.fontSize = (currentSize + delta) + 'px';
@@ -77,32 +74,34 @@
     function clearNotes() {
       if (confirm("Clear all notes?")) {
         notepad.value = "";
-        noteTitle.value = "";
         localStorage.removeItem("notes");
-        localStorage.removeItem("noteTitle");
         updateCounts();
       }
     }
 
     function downloadNotes() {
-      const title = noteTitle.value || "note";
       const blob = new Blob([notepad.value], { type: "text/plain" });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `${title}.txt`;
+      a.download = "note.txt";
       a.click();
     }
 
     function toggleTheme() {
-      document.body.classList.toggle('bg-yellow-900');
-      document.body.classList.toggle('bg-white');
-      document.body.classList.toggle('text-black');
+      document.body.classList.toggle("bg-white");
+      document.body.classList.toggle("text-black");
     }
 
-    // Show current date/time
-    document.getElementById('datetime').innerText = new Date().toLocaleString();
+    function togglePanel() {
+      const panel = document.getElementById("sidePanel");
+      const overlay = document.getElementById("overlay");
+      const isHidden = panel.classList.contains("translate-x-full");
 
-    // Initial count
+      panel.classList.toggle("translate-x-full");
+      overlay.classList.toggle("hidden", !isHidden);
+    }
+
+    // Initial counts
     updateCounts();
   </script>
 </body>
