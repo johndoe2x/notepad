@@ -5,34 +5,53 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Notepad Online</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code&display=swap" rel="stylesheet">
+  <style>
+    textarea, input { font-family: 'Fira Code', monospace; }
+  </style>
 </head>
-<body class="bg-yellow-900 text-white min-h-screen flex items-center justify-center p-6">
-  <div class="w-full max-w-3xl bg-gray-900 rounded-xl p-6 shadow-2xl">
-    <h1 class="text-center text-2xl font-semibold mb-4">Notepad Online</h1>
+<body class="bg-yellow-900 text-white min-h-screen flex items-center justify-center p-6 transition-colors duration-300">
+  <div class="w-full max-w-3xl bg-gray-900 rounded-xl p-6 shadow-2xl space-y-4">
+    
+    <!-- Header -->
+    <h1 class="text-center text-2xl font-bold">📝 Notepad Online</h1>
+    <p class="text-sm text-gray-400 text-center" id="datetime"></p>
+
+    <!-- Note Title -->
+    <input id="noteTitle" placeholder="Untitled Note" class="w-full bg-gray-800 text-white text-lg font-semibold px-3 py-2 rounded outline-none" />
 
     <!-- Toolbar -->
-    <div class="flex justify-between items-center mb-3">
+    <div class="flex flex-wrap gap-2 justify-between items-center">
       <div class="space-x-2">
         <button onclick="changeFontSize(1)" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">A+</button>
         <button onclick="changeFontSize(-1)" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">A-</button>
+        <button onclick="toggleTheme()" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">🌓 Theme</button>
+      </div>
+      <div class="space-x-2">
+        <button onclick="downloadNotes()" class="bg-blue-600 px-3 py-1 rounded hover:bg-blue-500">⬇️ Download</button>
+        <button onclick="clearNotes()" class="bg-red-600 px-3 py-1 rounded hover:bg-red-500">🗑 Clear</button>
       </div>
     </div>
 
     <!-- Textarea -->
-    <textarea id="notepad" class="w-full h-80 p-4 text-base font-mono bg-gray-800 rounded-lg focus:outline-none resize-none"
+    <textarea id="notepad" class="w-full h-80 p-4 text-base bg-gray-800 rounded-lg focus:outline-none resize-none"
       placeholder="Start typing..."></textarea>
+  </div>
 
-    <!-- Stats -->
-    <div class="text-sm mt-3 text-gray-400 flex justify-between">
-      <span id="wordCount">Words: 0</span>
-      <span id="charCount">Characters: 0</span>
-    </div>
+  <!-- Sticky Word Count -->
+  <div class="fixed bottom-2 right-4 text-sm text-gray-300 bg-gray-800 px-4 py-2 rounded shadow-lg">
+    <span id="wordCount">Words: 0</span> | <span id="charCount">Characters: 0</span>
   </div>
 
   <script>
     const notepad = document.getElementById('notepad');
     const wordCount = document.getElementById('wordCount');
     const charCount = document.getElementById('charCount');
+    const noteTitle = document.getElementById('noteTitle');
+
+    // Load from localStorage
+    notepad.value = localStorage.getItem("notes") || "";
+    noteTitle.value = localStorage.getItem("noteTitle") || "";
 
     function updateCounts() {
       const text = notepad.value;
@@ -41,14 +60,49 @@
       charCount.textContent = `Characters: ${text.length}`;
     }
 
-    notepad.addEventListener('input', updateCounts);
+    notepad.addEventListener('input', () => {
+      localStorage.setItem("notes", notepad.value);
+      updateCounts();
+    });
+
+    noteTitle.addEventListener('input', () => {
+      localStorage.setItem("noteTitle", noteTitle.value);
+    });
 
     function changeFontSize(delta) {
       const currentSize = parseFloat(window.getComputedStyle(notepad).fontSize);
       notepad.style.fontSize = (currentSize + delta) + 'px';
     }
 
-    // Initial count update
+    function clearNotes() {
+      if (confirm("Clear all notes?")) {
+        notepad.value = "";
+        noteTitle.value = "";
+        localStorage.removeItem("notes");
+        localStorage.removeItem("noteTitle");
+        updateCounts();
+      }
+    }
+
+    function downloadNotes() {
+      const title = noteTitle.value || "note";
+      const blob = new Blob([notepad.value], { type: "text/plain" });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${title}.txt`;
+      a.click();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('bg-yellow-900');
+      document.body.classList.toggle('bg-white');
+      document.body.classList.toggle('text-black');
+    }
+
+    // Show current date/time
+    document.getElementById('datetime').innerText = new Date().toLocaleString();
+
+    // Initial count
     updateCounts();
   </script>
 </body>
