@@ -13,21 +13,19 @@
 <body class="bg-[#6a3f1d] text-white min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
   <!-- ⚙️ Settings Button -->
-  <button onclick="togglePanel()" class="fixed top-4 right-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50">
-    ⚙️
-  </button>
+  <button onclick="togglePanel()" class="fixed top-4 right-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50">⚙️</button>
 
   <!-- 🗖 Resize Button -->
-  <button id="resizeBtn" onclick="toggleSize()" class="fixed top-4 left-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50" title="Toggle Size">
-    🗖
-  </button>
+  <button id="resizeBtn" onclick="toggleSize()" class="fixed top-4 left-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50" title="Toggle Size">🗖</button>
 
   <!-- Overlay -->
   <div id="overlay" onclick="togglePanel()" class="fixed inset-0 bg-black bg-opacity-40 hidden z-30"></div>
 
   <!-- Slide Panel -->
-  <div id="sidePanel" class="fixed top-0 right-0 w-64 h-full bg-gray-900 text-white shadow-lg p-4 transform translate-x-full transition-transform duration-300 z-40">
+  <div id="sidePanel" class="fixed top-0 right-0 w-72 h-full bg-gray-900 text-white shadow-lg p-4 transform translate-x-full transition-transform duration-300 z-40 overflow-y-auto">
     <h2 class="text-lg font-bold mb-4">Settings</h2>
+
+    <!-- Common Actions -->
     <div class="space-y-3">
       <button onclick="changeFontSize(1)" class="w-full bg-gray-700 px-3 py-2 rounded">A+ Increase</button>
       <button onclick="changeFontSize(-1)" class="w-full bg-gray-700 px-3 py-2 rounded">A- Decrease</button>
@@ -36,19 +34,33 @@
       <button onclick="toggleTheme()" class="w-full bg-gray-700 px-3 py-2 rounded">🌓 Toggle Theme</button>
     </div>
 
-    <!-- Multi-Note Slot Switch -->
+    <!-- Note Slot Manager -->
     <div class="mt-6 border-t border-gray-700 pt-4">
       <p class="font-semibold mb-2">🗂 Notes</p>
-      <div class="grid grid-cols-3 gap-2">
-        <button onclick="switchNote(1)" class="bg-gray-700 px-2 py-1 rounded">Note 1</button>
-        <button onclick="switchNote(2)" class="bg-gray-700 px-2 py-1 rounded">Note 2</button>
-        <button onclick="switchNote(3)" class="bg-gray-700 px-2 py-1 rounded">Note 3</button>
+      <div class="space-y-2 text-sm">
+        <div class="flex items-center gap-2">
+          <button onclick="switchNote(1)" class="bg-gray-700 px-2 py-1 rounded w-full text-left" id="noteBtn1">Note 1</button>
+          <span class="text-xs cursor-pointer" onclick="editNoteName(1)">✏️</span>
+        </div>
+        <input id="noteInput1" class="bg-gray-800 px-2 py-1 rounded w-full hidden" onblur="saveNoteName(1)" onkeydown="handleEnter(event, 1)" />
+
+        <div class="flex items-center gap-2">
+          <button onclick="switchNote(2)" class="bg-gray-700 px-2 py-1 rounded w-full text-left" id="noteBtn2">Note 2</button>
+          <span class="text-xs cursor-pointer" onclick="editNoteName(2)">✏️</span>
+        </div>
+        <input id="noteInput2" class="bg-gray-800 px-2 py-1 rounded w-full hidden" onblur="saveNoteName(2)" onkeydown="handleEnter(event, 2)" />
+
+        <div class="flex items-center gap-2">
+          <button onclick="switchNote(3)" class="bg-gray-700 px-2 py-1 rounded w-full text-left" id="noteBtn3">Note 3</button>
+          <span class="text-xs cursor-pointer" onclick="editNoteName(3)">✏️</span>
+        </div>
+        <input id="noteInput3" class="bg-gray-800 px-2 py-1 rounded w-full hidden" onblur="saveNoteName(3)" onkeydown="handleEnter(event, 3)" />
       </div>
       <p class="text-xs text-gray-400 mt-2">Active: <span id="currentNoteLabel">Note 1</span></p>
     </div>
   </div>
 
-  <!-- Notepad Box -->
+  <!-- Notepad -->
   <div id="notepadBox" class="relative z-10 w-full max-w-3xl bg-[#0f172a] rounded-xl p-6 shadow-2xl transition-all duration-300">
     <h1 class="text-center text-xl font-semibold mb-4">Notepad Online</h1>
 
@@ -86,9 +98,49 @@
     function switchNote(slot) {
       saveCurrentNote();
       currentNoteSlot = slot;
-      notepad.value = localStorage.getItem(`note_slot_${slot}`) || "";
-      currentNoteLabel.textContent = `Note ${slot}`;
+      const saved = localStorage.getItem(`note_slot_${slot}`) || "";
+      notepad.value = saved;
       updateCounts();
+      const name = localStorage.getItem(`note_name_${slot}`) || `Note ${slot}`;
+      currentNoteLabel.textContent = name;
+    }
+
+    function renameNote(slot, name) {
+      localStorage.setItem(`note_name_${slot}`, name);
+      document.getElementById(`noteBtn${slot}`).textContent = name;
+      if (currentNoteSlot === slot) currentNoteLabel.textContent = name;
+    }
+
+    function editNoteName(slot) {
+      const input = document.getElementById(`noteInput${slot}`);
+      const btn = document.getElementById(`noteBtn${slot}`);
+      input.value = btn.textContent;
+      input.classList.remove("hidden");
+      btn.classList.add("hidden");
+      input.focus();
+    }
+
+    function saveNoteName(slot) {
+      const input = document.getElementById(`noteInput${slot}`);
+      const btn = document.getElementById(`noteBtn${slot}`);
+      const newName = input.value.trim() || `Note ${slot}`;
+      renameNote(slot, newName);
+      input.classList.add("hidden");
+      btn.classList.remove("hidden");
+    }
+
+    function handleEnter(e, slot) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveNoteName(slot);
+      }
+    }
+
+    function loadNoteNames() {
+      for (let i = 1; i <= 3; i++) {
+        const name = localStorage.getItem(`note_name_${i}`) || `Note ${i}`;
+        document.getElementById(`noteBtn${i}`).textContent = name;
+      }
     }
 
     notepad.addEventListener('input', () => {
@@ -110,10 +162,11 @@
     }
 
     function downloadNotes() {
+      const name = localStorage.getItem(`note_name_${currentNoteSlot}`) || `Note_${currentNoteSlot}`;
       const blob = new Blob([notepad.value], { type: "text/plain" });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `Note_${currentNoteSlot}.txt`;
+      a.download = `${name}.txt`;
       a.click();
     }
 
@@ -140,7 +193,7 @@
       resizeBtn.textContent = isFull ? "🗗" : "🗖";
     }
 
-    // Load initial note
+    loadNoteNames();
     switchNote(1);
   </script>
 </body>
