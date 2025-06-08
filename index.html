@@ -12,12 +12,12 @@
 </head>
 <body class="bg-[#6a3f1d] text-white min-h-screen flex items-center justify-center p-4 transition-colors duration-300">
 
-  <!-- ⚙️ Floating Settings Button -->
+  <!-- ⚙️ Settings Button -->
   <button onclick="togglePanel()" class="fixed top-4 right-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50">
     ⚙️
   </button>
 
-  <!-- 🗖 Fullscreen Toggle Button -->
+  <!-- 🗖 Resize Button -->
   <button id="resizeBtn" onclick="toggleSize()" class="fixed top-4 left-4 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700 z-50" title="Toggle Size">
     🗖
   </button>
@@ -25,7 +25,7 @@
   <!-- Overlay -->
   <div id="overlay" onclick="togglePanel()" class="fixed inset-0 bg-black bg-opacity-40 hidden z-30"></div>
 
-  <!-- Slide-In Panel -->
+  <!-- Slide Panel -->
   <div id="sidePanel" class="fixed top-0 right-0 w-64 h-full bg-gray-900 text-white shadow-lg p-4 transform translate-x-full transition-transform duration-300 z-40">
     <h2 class="text-lg font-bold mb-4">Settings</h2>
     <div class="space-y-3">
@@ -34,6 +34,17 @@
       <button onclick="downloadNotes()" class="w-full bg-blue-600 px-3 py-2 rounded">⬇️ Download</button>
       <button onclick="clearNotes()" class="w-full bg-red-600 px-3 py-2 rounded">🗑 Clear</button>
       <button onclick="toggleTheme()" class="w-full bg-gray-700 px-3 py-2 rounded">🌓 Toggle Theme</button>
+    </div>
+
+    <!-- Multi-Note Slot Switch -->
+    <div class="mt-6 border-t border-gray-700 pt-4">
+      <p class="font-semibold mb-2">🗂 Notes</p>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="switchNote(1)" class="bg-gray-700 px-2 py-1 rounded">Note 1</button>
+        <button onclick="switchNote(2)" class="bg-gray-700 px-2 py-1 rounded">Note 2</button>
+        <button onclick="switchNote(3)" class="bg-gray-700 px-2 py-1 rounded">Note 3</button>
+      </div>
+      <p class="text-xs text-gray-400 mt-2">Active: <span id="currentNoteLabel">Note 1</span></p>
     </div>
   </div>
 
@@ -57,9 +68,9 @@
     const charCount = document.getElementById('charCount');
     const notepadBox = document.getElementById('notepadBox');
     const resizeBtn = document.getElementById('resizeBtn');
+    const currentNoteLabel = document.getElementById('currentNoteLabel');
 
-    // Load from localStorage
-    notepad.value = localStorage.getItem("notes") || "";
+    let currentNoteSlot = 1;
 
     function updateCounts() {
       const text = notepad.value;
@@ -68,8 +79,20 @@
       charCount.textContent = `Characters: ${text.length}`;
     }
 
+    function saveCurrentNote() {
+      localStorage.setItem(`note_slot_${currentNoteSlot}`, notepad.value);
+    }
+
+    function switchNote(slot) {
+      saveCurrentNote();
+      currentNoteSlot = slot;
+      notepad.value = localStorage.getItem(`note_slot_${slot}`) || "";
+      currentNoteLabel.textContent = `Note ${slot}`;
+      updateCounts();
+    }
+
     notepad.addEventListener('input', () => {
-      localStorage.setItem("notes", notepad.value);
+      saveCurrentNote();
       updateCounts();
     });
 
@@ -79,9 +102,9 @@
     }
 
     function clearNotes() {
-      if (confirm("Clear all notes?")) {
+      if (confirm("Clear current note?")) {
         notepad.value = "";
-        localStorage.removeItem("notes");
+        saveCurrentNote();
         updateCounts();
       }
     }
@@ -90,7 +113,7 @@
       const blob = new Blob([notepad.value], { type: "text/plain" });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = "note.txt";
+      a.download = `Note_${currentNoteSlot}.txt`;
       a.click();
     }
 
@@ -103,13 +126,11 @@
       const panel = document.getElementById("sidePanel");
       const overlay = document.getElementById("overlay");
       const isHidden = panel.classList.contains("translate-x-full");
-
       panel.classList.toggle("translate-x-full");
       overlay.classList.toggle("hidden", !isHidden);
     }
 
     let isFull = false;
-
     function toggleSize() {
       isFull = !isFull;
       notepadBox.classList.toggle("max-w-3xl", !isFull);
@@ -119,7 +140,8 @@
       resizeBtn.textContent = isFull ? "🗗" : "🗖";
     }
 
-    updateCounts();
+    // Load initial note
+    switchNote(1);
   </script>
 </body>
 </html>
